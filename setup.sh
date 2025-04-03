@@ -109,7 +109,7 @@ if ask "Do you want to install pyenv?"; then
 fi
 
 # Step 9: Install dependencies
-if ask "Do you want to install development dependencies?"; then
+if ask "Do you want to install pyenv development dependencies?"; then
   echo "⚙️ Installing dependencies..."
   sudo apt-get install -y \
     make \
