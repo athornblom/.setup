@@ -1,5 +1,5 @@
 # .setup
 
 ```zsh
-git clone https://github.com/athornblom/.setup ~/.setup && sh ~/.setup/setup.sh
+git clone git@github.com:athornblom/.setup.git ~/.setup && sh ~/.setup/setup.sh
 ```
