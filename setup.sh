@@ -1,71 +1,135 @@
-sudo apt-get update && sudo apt-get upgrade -y
+#!/bin/bash
 
-sudo apt-get install zsh
-sudo apt-get install git
+# Function to ask for confirmation
+ask() {
+  while true; do
+    read -p "👉 $1 (y/n): " yn
+    case $yn in
+      [Yy]* ) return 0;;
+      [Nn]* ) echo "⏭️ Skipping..."; return 1;;
+      * ) echo "❌ Please answer yes or no.";;
+    esac
+  done
+}
 
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+# Function to prompt for input (optional)
+prompt_input() {
+  read -p "✏️  $1: " input
+  echo "$input"
+}
 
-# add plugins
-# fzf
-# autojump
+echo "🚀 Starting setup... 🚀"
 
+# Step 1: Update & Upgrade
+if ask "Do you want to update and upgrade your system?"; then
+  echo "🔄 Updating and upgrading system..."
+  sudo apt-get update && sudo apt-get upgrade -y
+  echo "✅ System updated!"
+fi
 
+# Step 2: Install ZSH
+if ask "Do you want to install ZSH?"; then
+  echo "🖥️ Installing ZSH..."
+  sudo apt-get install -y zsh
+  echo "✅ ZSH installed!"
+else
+  echo "❌ ZSH is required for this setup. Exiting script..."
+  exit 1
+fi
 
+# Step 3: Install Oh My Zsh
+if ask "Do you want to install Oh My Zsh?"; then
+  echo "🎩 Installing Oh My Zsh..."
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+  echo "✅ Oh My Zsh installed!"
+fi
 
-# Safely append zsh configuration
-echo "
+# Step 4: Configure automatic ZSH switch
+if ask "Do you want to configure automatic ZSH switch?"; then
+  echo "⚙️ Configuring ZSH as default shell..."
+  echo "
 # === Begin ZSH Configuration ===
-# Auto switch to zsh if available
 if [ -t 1 ]; then
   if command -v zsh >/dev/null 2>&1; then
     exec zsh
   fi
 fi
 # === End ZSH Configuration ===" >> ~/.bashrc
-Configuration for automatic zsh switch has been added to ~/.bashrc
+  echo "✅ ZSH switch configuration added!"
+fi
 
-# Dump my zshrc configuration
-echo "Backing up default zshrc to ~/.zshrc.default 🦺"
-cp -f ~/.zshrc ~/.zshrc.default
-echo "Backing up default bashrc to ~/.bashrc.default 🦺"
-cp -f ~/.bashrc ~/.bashrc.default
+# Step 5: Backup and configure ZSH
+if ask "Do you want to backup and add a custom ZSH configuration?"; then
+  echo "🦺 Backing up existing ZSH and Bash configurations..."
+  cp -f ~/.zshrc ~/.zshrc.default
+  cp -f ~/.bashrc ~/.bashrc.default
+  echo "🚀 Applying custom ZSH configuration..."
+  cp -f ~/.setup/development/zshrc ~/.zshrc
+  echo "✅ ZSH configuration applied!"
+fi
 
-echo "Adding custom zshrc configuration🚀"
-cp -f ~/.setup/development/zshrc ~/.zshrc
+# Step 6: Backup and configure Git
+if ask "Do you want to backup and add a custom Git configuration?"; then
+  echo "🦺 Backing up Git configuration..."
+  cp -f ~/.gitconfig ~/.gitconfig.default
+  echo "🚀 Applying custom Git configuration..."
+  cp -f ~/.setup/development/gitconfig ~/.gitconfig
+  echo "✅ Git configuration applied!"
+fi
 
-# Dump git configuration
-echo "Backing up default gitconfig to ~/.gitconfig.default 🦺"
-cp -f ~/.gitconfig ~/.gitconfig.default
-echo "Adding custom gitconfig configuration🚀"
-cp -f ~/.setup/development/gitconfig ~/.gitconfig
+# Step 7: Ask for Git username and email
+if ask "Do you want to set your Git username and email?"; then
+  git_username=$(prompt_input "Enter your Git username (leave blank to skip)")
+  git_email=$(prompt_input "Enter your Git email (leave blank to skip)")
 
-echo  "Installing pyenv 🐍"
-# Install pyenv
-curl https://pyenv.run | bash
-echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc
-echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zshrc
-echo 'eval "$(pyenv init -)"' >> ~/.zshrc
-source ~/.zshrc
+  if [[ ! -z "$git_username" ]]; then
+    git config --global user.name "$git_username"
+    echo "✅ Git username set to: $git_username"
+  else
+    echo "⏭️ Skipping Git username setup."
+  fi
 
+  if [[ ! -z "$git_email" ]]; then
+    git config --global user.email "$git_email"
+    echo "✅ Git email set to: $git_email"
+  else
+    echo "⏭️ Skipping Git email setup."
+  fi
+fi
 
-# DEPENDENCIES
-sudo apt-get install -y \
-  make \
-  build-essential \
-  libssl-dev \
-  zlib1g-dev \
-  libbz2-dev \
-  libreadline-dev \
-  libsqlite3-dev \
-  wget \
-  curl \
-  llvm \
-  libncurses5-dev \
-  libncursesw5-dev \
-  xz-utils \
-  tk-dev \
-  liblzma-dev
+# Step 8: Install pyenv
+if ask "Do you want to install pyenv?"; then
+  echo "🐍 Installing pyenv..."
+  curl https://pyenv.run | bash
+  echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc
+  echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zshrc
+  echo 'eval "$(pyenv init -)"' >> ~/.zshrc
+  source ~/.zshrc
+  echo "✅ pyenv installed!"
+fi
 
-echo "\n\n"
-echo "✨ Setup complete ✨"
+# Step 9: Install dependencies
+if ask "Do you want to install development dependencies?"; then
+  echo "⚙️ Installing dependencies..."
+  sudo apt-get install -y \
+    make \
+    build-essential \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    wget \
+    curl \
+    llvm \
+    libncurses5-dev \
+    libncursesw5-dev \
+    xz-utils \
+    tk-dev \
+    liblzma-dev
+  echo "✅ Dependencies installed!"
+fi
+
+echo ""
+echo "✨ Setup complete! ✨"
 echo "✅ Restart your terminal to apply changes."
