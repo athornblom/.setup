@@ -20,6 +20,9 @@ prompt_input() {
 
 echo "🚀 Starting setup... 🚀"
 
+# Detect the current shell
+current_shell=$(ps -p $$ -o comm=)
+
 # Step 1: Update & Upgrade
 if ask "Do you want to update and upgrade your system?"; then
   echo "🔄 Updating and upgrading system..."
@@ -27,27 +30,38 @@ if ask "Do you want to update and upgrade your system?"; then
   echo "✅ System updated!"
 fi
 
-# Step 2: Install ZSH
-if ask "Do you want to install ZSH?"; then
-  echo "🖥️ Installing ZSH..."
-  sudo apt-get install -y zsh
-  echo "✅ ZSH installed!"
+# Step 2: Install ZSH (Only if not already in Zsh)
+if [[ "$current_shell" != "zsh" ]]; then
+  if ask "Do you want to install ZSH?"; then
+    echo "🖥️ Installing ZSH..."
+    sudo apt-get install -y zsh
+    echo "✅ ZSH installed!"
+
+    # Step 3: Set Zsh as default shell and switch immediately
+    if ask "Do you want to switch to Zsh now?"; then
+      echo "⚙️ Switching to Zsh..."
+      exec zsh -c "source ~/.zshrc && exec zsh"
+    fi
+  else
+    echo "❌ ZSH is required for this setup. Exiting script..."
+    exit 1
+  fi
 else
-  echo "❌ ZSH is required for this setup. Exiting script..."
-  exit 1
+  echo "✅ Already running in Zsh, skipping Zsh installation."
 fi
 
-# Step 3: Install Oh My Zsh
+# Step 4: Install Oh My Zsh
 if ask "Do you want to install Oh My Zsh?"; then
   echo "🎩 Installing Oh My Zsh..."
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
   echo "✅ Oh My Zsh installed!"
 fi
 
-# Step 4: Configure automatic ZSH switch
-if ask "Do you want to configure automatic ZSH switch?"; then
-  echo "⚙️ Configuring ZSH as default shell..."
-  echo "
+# Step 5: Configure automatic ZSH switch (Only modify Bash if running in Bash)
+if [[ "$current_shell" != "zsh" ]]; then
+  if ask "Do you want to configure automatic ZSH switch in Bash?"; then
+    echo "⚙️ Configuring ZSH as default shell in Bash..."
+    echo "
 # === Begin ZSH Configuration ===
 if [ -t 1 ]; then
   if command -v zsh >/dev/null 2>&1; then
@@ -55,10 +69,11 @@ if [ -t 1 ]; then
   fi
 fi
 # === End ZSH Configuration ===" >> ~/.bashrc
-  echo "✅ ZSH switch configuration added!"
+    echo "✅ ZSH switch configuration added!"
+  fi
 fi
 
-# Step 5: Backup and configure ZSH
+# Step 6: Backup and configure ZSH
 if ask "Do you want to backup and add a custom ZSH configuration?"; then
   echo "🦺 Backing up existing ZSH and Bash configurations..."
   cp -f ~/.zshrc ~/.zshrc.default
@@ -68,7 +83,7 @@ if ask "Do you want to backup and add a custom ZSH configuration?"; then
   echo "✅ ZSH configuration applied!"
 fi
 
-# Step 6: Backup and configure Git
+# Step 7: Backup and configure Git
 if ask "Do you want to backup and add a custom Git configuration?"; then
   echo "🦺 Backing up Git configuration..."
   cp -f ~/.gitconfig ~/.gitconfig.default
@@ -77,7 +92,7 @@ if ask "Do you want to backup and add a custom Git configuration?"; then
   echo "✅ Git configuration applied!"
 fi
 
-# Step 7: Ask for Git username and email
+# Step 8: Ask for Git username and email
 if ask "Do you want to set your Git username and email?"; then
   git_username=$(prompt_input "Enter your Git username (leave blank to skip)")
   git_email=$(prompt_input "Enter your Git email (leave blank to skip)")
@@ -97,7 +112,7 @@ if ask "Do you want to set your Git username and email?"; then
   fi
 fi
 
-# Step 8: Install pyenv
+# Step 9: Install pyenv
 if ask "Do you want to install pyenv?"; then
   echo "🐍 Installing pyenv..."
   curl https://pyenv.run | bash
@@ -108,7 +123,7 @@ if ask "Do you want to install pyenv?"; then
   echo "✅ pyenv installed!"
 fi
 
-# Step 9: Install dependencies
+# Step 10: Install dependencies
 if ask "Do you want to install pyenv development dependencies?"; then
   echo "⚙️ Installing dependencies..."
   sudo apt-get install -y \
