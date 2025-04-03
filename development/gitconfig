@@ -1,0 +1,11 @@
+[core]
+        excludesfile = ~/.setup/development/gitignore
+[user]
+        email = adam.thornblom@gmail.com
+        name = Adam Thörnblom
+[init]
+        defaultBranch = main
+[color "status"]
+        added = green
+        changed = cyan
+        untracked = yellow
