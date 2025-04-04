@@ -23,6 +23,8 @@ echo "🚀 Starting setup... 🚀"
 # Detect the current shell
 current_shell=$(ps -p $$ -o comm=)
 
+echo "🔍 Current shell: $current_shell"
+# exit 1
 # Step 1: Update & Upgrade
 if ask "Do you want to update and upgrade your system?"; then
   echo "🔄 Updating and upgrading system..."
@@ -31,17 +33,12 @@ if ask "Do you want to update and upgrade your system?"; then
 fi
 
 # Step 2: Install ZSH (Only if not already in Zsh)
-if [[ "$current_shell" != "zsh" ]]; then
-  if ask "Do you want to install ZSH?"; then
+if [ "$current_shell" != "zsh" ]; then
+  if ask "Do you want to install ZSH? "; then
     echo "🖥️ Installing ZSH..."
     sudo apt-get install -y zsh
     echo "✅ ZSH installed!"
 
-    # Step 3: Set Zsh as default shell and switch immediately
-    if ask "Do you want to switch to Zsh now?"; then
-      echo "⚙️ Switching to Zsh..."
-      exec zsh -c "source ~/.zshrc && exec zsh"
-    fi
   else
     echo "❌ ZSH is required for this setup. Exiting script..."
     exit 1
@@ -58,7 +55,7 @@ if ask "Do you want to install Oh My Zsh?"; then
 fi
 
 # Step 5: Configure automatic ZSH switch (Only modify Bash if running in Bash)
-if [[ "$current_shell" != "zsh" ]]; then
+if [ "$current_shell" != "zsh" ]; then
   if ask "Do you want to configure automatic ZSH switch in Bash?"; then
     echo "⚙️ Configuring ZSH as default shell in Bash..."
     echo "
@@ -97,14 +94,14 @@ if ask "Do you want to set your Git username and email?"; then
   git_username=$(prompt_input "Enter your Git username (leave blank to skip)")
   git_email=$(prompt_input "Enter your Git email (leave blank to skip)")
 
-  if [[ ! -z "$git_username" ]]; then
+  if [ ! -z "$git_username" ]; then
     git config --global user.name "$git_username"
     echo "✅ Git username set to: $git_username"
   else
     echo "⏭️ Skipping Git username setup."
   fi
 
-  if [[ ! -z "$git_email" ]]; then
+  if [ ! -z "$git_email" ]; then
     git config --global user.email "$git_email"
     echo "✅ Git email set to: $git_email"
   else
